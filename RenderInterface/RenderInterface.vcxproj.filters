@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="공용">
+      <UniqueIdentifier>{f7791dac-8db7-4aa2-a1c7-146089ad8d78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllMain.cpp">
@@ -21,14 +24,14 @@
     <ClCompile Include="OpenGL.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\Text.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Interface.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="RenderInterface.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Text.cpp">
+      <Filter>공용</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,7 +44,13 @@
     <ClInclude Include="Interface.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\Text.h">
+    <ClInclude Include="..\Common\Text.h">
+      <Filter>공용</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Variable.h">
+      <Filter>공용</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ResourceManager\ResourceManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

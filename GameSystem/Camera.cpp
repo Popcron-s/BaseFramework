@@ -80,7 +80,7 @@ void _CCamera::Render(_DISPLAY* display){
 		obj_list[i].vertex_num = t_node->_node->GetVertexNumber();
 		obj_list[i].vertex = new _VERTEX[obj_list[i].vertex_num];
 		for(UINT j = 0 ; j<(obj_list[i].vertex_num) ; ++j){
-			obj_list[i].vertex[j].vertex.x = t_node->_node->GetVertex()[j].pos.x;
+			/*obj_list[i].vertex[j].vertex.x = t_node->_node->GetVertex()[j].pos.x;
 			obj_list[i].vertex[j].vertex.y = t_node->_node->GetVertex()[j].pos.y;
 			obj_list[i].vertex[j].vertex.z = t_node->_node->GetVertex()[j].pos.z;
 			obj_list[i].vertex[j].vertex.w = t_node->_node->GetVertex()[j].pos.w;
@@ -96,12 +96,13 @@ void _CCamera::Render(_DISPLAY* display){
 			obj_list[i].vertex[j].normal.w = t_node->_node->GetVertex()[j].normal.w;
 
 			obj_list[i].vertex[j].textureUV.x = t_node->_node->GetVertex()[j].tex.x;
-			obj_list[i].vertex[j].textureUV.x = t_node->_node->GetVertex()[j].tex.x;
+			obj_list[i].vertex[j].textureUV.y = t_node->_node->GetVertex()[j].tex.y;*/
+			obj_list[i].vertex[j] = t_node->_node->GetVertex()[j];
 		}
-		obj_list[i].texture_num = 0;//t_node->_node->GetTextureNumber
-		//obj_list[i].texture = new TEXT[obj_list[i].texture_num];
+		obj_list[i].texture_num = t_node->_node->GetTextureNumber();
+		obj_list[i].texture = new TEXT[obj_list[i].texture_num];
 		for(UINT j = 0 ; j<(obj_list[i].texture_num) ; ++j){
-
+			obj_list[i].texture[j] = t_node->_node->GetTexture()[j];
 		}
 		obj_list[i].world_mat._11 = t_node->_node->GetWorldMatrix()._11;
 		obj_list[i].world_mat._12 = t_node->_node->GetWorldMatrix()._12;
@@ -154,7 +155,7 @@ void _CCamera::Render(_DISPLAY* display){
 
 	for(UINT i = 0 ;i<obj_num ; ++i){
 		delete [] (obj_list[i].vertex);
-		//delete [] (obj_list[i].texture);
+		delete [] (obj_list[i].texture);
 	}
 	delete [] obj_list;
 	delete camera;

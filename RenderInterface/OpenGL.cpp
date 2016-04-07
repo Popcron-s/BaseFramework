@@ -22,14 +22,19 @@ bool _COpenGLRenderer::Render(
 			obj_list[i].world_mat._31,obj_list[i].world_mat._32,obj_list[i].world_mat._33,obj_list[i].world_mat._34,
 			obj_list[i].world_mat._41,obj_list[i].world_mat._42,obj_list[i].world_mat._43,obj_list[i].world_mat._44};
 		glLoadMatrixf(world_mat);
-		glMultMatrixf(view_mat);
+		//glMultMatrixf(view_mat);
+		for(UINT j = 0 ; j<obj_list[i].texture_num ; ++j){
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+		}
 		glBegin(GL_TRIANGLE_STRIP);
 			for(UINT j = 0; j<obj_list[i].vertex_num ; ++j){
-				glVertex3f(obj_list[i].vertex[j].vertex.x,obj_list[i].vertex[j].vertex.y,obj_list[i].vertex[j].vertex.z);
+				//glNormal3f();
+				glTexCoord2f(obj_list[i].vertex[j].tex.x, obj_list[i].vertex[j].tex.y);
+				glVertex3f(obj_list[i].vertex[j].pos.x,obj_list[i].vertex[j].pos.y,obj_list[i].vertex[j].pos.z);
 			}
 		glEnd();
 	}
-	glMatrixMode(GL_TEXTURE);
+	//glMatrixMode(GL_TEXTURE);
 	glMatrixMode(GL_PROJECTION);
 	GLfloat proj_mat[16] = {
 		camera->proj_mat._11,camera->proj_mat._12,camera->proj_mat._13,camera->proj_mat._14,
@@ -37,8 +42,8 @@ bool _COpenGLRenderer::Render(
 		camera->proj_mat._31,camera->proj_mat._32,camera->proj_mat._33,camera->proj_mat._34,
 		camera->proj_mat._41,camera->proj_mat._42,camera->proj_mat._43,camera->proj_mat._44
 	};
-	glLoadMatrixf(proj_mat);
-	//glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+	//glLoadMatrixf(proj_mat);
+	glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
 	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,buf);
 	
@@ -55,12 +60,13 @@ bool _COpenGLRenderer::DrawDisplay(UINT width, UINT height, _DISPLAY* display, U
 	for(UINT i = 0 ; i<display_num ; ++i){
 		for(UINT x = display[i].x ; x<width ; ++x){
 			for(UINT y = display[i].y ; y<height ; ++y){
-				buf[(y*width)+x] = display[i].buf[(y*(display[i].width))+x];
+				buf[(y*width)+x] = display[i].buf[((y-display[i].y)*(display[i].width))+(x-display[i].x)];
 			}
 		}
 	}
 	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
 	delete [] buf;
+	glFlush();
 	glFlush();
 	return true;
 }

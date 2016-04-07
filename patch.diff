@@ -1,0 +1,2061 @@
+diff --git a/Base Library.sdf b/Base Library.sdf
+new file mode 100644
+index 0000000..fa96ee3
+Binary files /dev/null and b/Base Library.sdf differ
+diff --git a/Base Library.sln b/Base Library.sln
+new file mode 100644
+index 0000000..8f1132e
+--- /dev/null
++++ b/Base Library.sln	
+@@ -0,0 +1,38 @@
++﻿
++Microsoft Visual Studio Solution File, Format Version 12.00
++# Visual Studio 14
++VisualStudioVersion = 14.0.24720.0
++MinimumVisualStudioVersion = 10.0.40219.1
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameSystem", "GameSystem\GameSystem.vcxproj", "{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderInterface", "RenderInterface\RenderInterface.vcxproj", "{D289CE0D-F960-4B76-B22B-5ED339A44954}"
++EndProject
++Global
++	GlobalSection(SolutionConfigurationPlatforms) = preSolution
++		Debug|x64 = Debug|x64
++		Debug|x86 = Debug|x86
++		Release|x64 = Release|x64
++		Release|x86 = Release|x86
++	EndGlobalSection
++	GlobalSection(ProjectConfigurationPlatforms) = postSolution
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Debug|x64.ActiveCfg = Debug|x64
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Debug|x64.Build.0 = Debug|x64
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Debug|x86.ActiveCfg = Debug|Win32
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Debug|x86.Build.0 = Debug|Win32
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Release|x64.ActiveCfg = Release|x64
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Release|x64.Build.0 = Release|x64
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Release|x86.ActiveCfg = Release|Win32
++		{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}.Release|x86.Build.0 = Release|Win32
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Debug|x64.ActiveCfg = Debug|x64
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Debug|x64.Build.0 = Debug|x64
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Debug|x86.ActiveCfg = Debug|Win32
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Debug|x86.Build.0 = Debug|Win32
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Release|x64.ActiveCfg = Release|x64
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Release|x64.Build.0 = Release|x64
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Release|x86.ActiveCfg = Release|Win32
++		{D289CE0D-F960-4B76-B22B-5ED339A44954}.Release|x86.Build.0 = Release|Win32
++	EndGlobalSection
++	GlobalSection(SolutionProperties) = preSolution
++		HideSolutionNode = FALSE
++	EndGlobalSection
++EndGlobal
+diff --git a/Debug/GameSystem.exp b/Debug/GameSystem.exp
+new file mode 100644
+index 0000000..7ed75ac
+Binary files /dev/null and b/Debug/GameSystem.exp differ
+diff --git a/Debug/RenderInterface.exp b/Debug/RenderInterface.exp
+new file mode 100644
+index 0000000..a60c674
+Binary files /dev/null and b/Debug/RenderInterface.exp differ
+diff --git a/GameSystem/Camera.cpp b/GameSystem/Camera.cpp
+new file mode 100644
+index 0000000..8e8582a
+--- /dev/null
++++ b/GameSystem/Camera.cpp
+@@ -0,0 +1,161 @@
++#include "Object.h"
++#include "MainSystem.h"
++
++_CCamera::_CCamera(){
++	m_eye = {0.0f, 0.0f, 0.0f};
++	m_lookat = {0.0f, 0.0f, 0.0f};
++	m_up = {0.0f, 1.0f, 0.0f};
++
++	m_aspect = {1.0f, 1.0f};
++	m_z = {1.0f, 10.0f};
++
++	m_view = {1.0f, 0.0f, 0.0f, 0.0f,
++			  0.0f, 1.0f, 0.0f, 0.0f,
++			  0.0f, 0.0f, 1.0f, 0.0f,
++			  0.0f, 0.0f, 20.0f, 1.0f};
++	m_proj = {800.0f, 0.0f, 0.0f, 0.0f,
++			  0.0f, 600.0f, 0.0f, 0.0f,
++			  0.0f, 0.0f, 1.0f, 1.0f,
++			  0.0f, 0.0f, -10.0f, 0.0f};
++
++	m_Object_List = 0x00;
++
++	m_pos = {0.0f, 0.0f};
++	m_size = {800.0f, 600.0f};
++
++	m_able = true;
++
++	_CGameSystem::GetSingleton()->RegisterCamera(this);
++}
++_CCamera::~_CCamera(){
++	while(m_Object_List != 0x00){
++		_LIST<_CObject>* t_node = m_Object_List;
++		m_Object_List = m_Object_List->_next;
++		delete t_node;
++	}
++	
++	_CGameSystem::GetSingleton()->RemoveCamera(this);
++}
++
++bool _CCamera::RegisterObject(_CObject* obj){
++	_LIST<_CObject>** t_node = &m_Object_List;
++	while((*t_node) != 0x00){
++		if((*t_node)->_node == obj){return false;}
++		t_node = &((*t_node)->_next);
++	}
++	(*t_node) = new _LIST<_CObject>;
++	(*t_node)->_node = obj;
++	(*t_node)->_next = 0x00;
++	return true;
++}
++bool _CCamera::RemoveObject(_CObject* obj){
++	_LIST<_CObject>** t_node = &m_Object_List;
++	while((*t_node) != 0x00){
++		if((*t_node)->_next->_node == obj){
++			_LIST<_CObject>* d_node = (*t_node)->_next;
++			(*t_node)->_next = d_node->_next;
++			delete d_node;
++			return true;
++		}
++		t_node = &((*t_node)->_next);
++	}
++	return false;
++}
++
++bool _CCamera::Getable() const{return m_able;}
++void _CCamera::Enable(){m_able = true;}
++void _CCamera::Disable(){m_able = false;}
++
++void _CCamera::Render(_DISPLAY* display){
++	_LIST<_CObject>* t_node = m_Object_List;
++	UINT obj_num = 0;
++	while(t_node != 0x00){
++		++obj_num;
++		t_node = t_node->_next;
++	}
++	_OBJECT* obj_list = new _OBJECT[obj_num];
++	t_node = m_Object_List;
++	for(UINT i = 0 ;i<obj_num ; ++i){
++		//obj_list[i] = t_node;
++		obj_list[i].vertex_num = t_node->_node->GetVertexNumber();
++		obj_list[i].vertex = new _VERTEX[obj_list[i].vertex_num];
++		for(UINT j = 0 ; j<(obj_list[i].vertex_num) ; ++j){
++			obj_list[i].vertex[j].vertex.x = t_node->_node->GetVertex()[j].pos.x;
++			obj_list[i].vertex[j].vertex.y = t_node->_node->GetVertex()[j].pos.y;
++			obj_list[i].vertex[j].vertex.z = t_node->_node->GetVertex()[j].pos.z;
++			obj_list[i].vertex[j].vertex.w = t_node->_node->GetVertex()[j].pos.w;
++
++			obj_list[i].vertex[j].diffuse.x = t_node->_node->GetVertex()[j].diffuse.x;
++			obj_list[i].vertex[j].diffuse.y = t_node->_node->GetVertex()[j].diffuse.y;
++			obj_list[i].vertex[j].diffuse.z = t_node->_node->GetVertex()[j].diffuse.z;
++			obj_list[i].vertex[j].diffuse.w = t_node->_node->GetVertex()[j].diffuse.w;
++
++			obj_list[i].vertex[j].normal.x = t_node->_node->GetVertex()[j].normal.x;
++			obj_list[i].vertex[j].normal.y = t_node->_node->GetVertex()[j].normal.y;
++			obj_list[i].vertex[j].normal.z = t_node->_node->GetVertex()[j].normal.z;
++			obj_list[i].vertex[j].normal.w = t_node->_node->GetVertex()[j].normal.w;
++
++			obj_list[i].vertex[j].textureUV.x = t_node->_node->GetVertex()[j].tex.x;
++			obj_list[i].vertex[j].textureUV.x = t_node->_node->GetVertex()[j].tex.x;
++		}
++		obj_list[i].texture_num = 0;//t_node->_node->GetTextureNumber
++		//obj_list[i].texture = new TEXT[obj_list[i].texture_num];
++		for(UINT j = 0 ; j<(obj_list[i].texture_num) ; ++j){
++
++		}
++		obj_list[i].world_mat._11 = t_node->_node->GetWorldMatrix()._11;
++		obj_list[i].world_mat._12 = t_node->_node->GetWorldMatrix()._12;
++		obj_list[i].world_mat._13 = t_node->_node->GetWorldMatrix()._13;
++		obj_list[i].world_mat._14 = t_node->_node->GetWorldMatrix()._14;
++		obj_list[i].world_mat._21 = t_node->_node->GetWorldMatrix()._21;
++		obj_list[i].world_mat._22 = t_node->_node->GetWorldMatrix()._22;
++		obj_list[i].world_mat._23 = t_node->_node->GetWorldMatrix()._23;
++		obj_list[i].world_mat._24 = t_node->_node->GetWorldMatrix()._24;
++		obj_list[i].world_mat._31 = t_node->_node->GetWorldMatrix()._31;
++		obj_list[i].world_mat._32 = t_node->_node->GetWorldMatrix()._32;
++		obj_list[i].world_mat._33 = t_node->_node->GetWorldMatrix()._33;
++		obj_list[i].world_mat._34 = t_node->_node->GetWorldMatrix()._34;
++		obj_list[i].world_mat._41 = t_node->_node->GetWorldMatrix()._41;
++		obj_list[i].world_mat._42 = t_node->_node->GetWorldMatrix()._42;
++		obj_list[i].world_mat._43 = t_node->_node->GetWorldMatrix()._43;
++		obj_list[i].world_mat._44 = t_node->_node->GetWorldMatrix()._44;
++
++		t_node = t_node->_next;
++	}
++
++	_CAMERA* camera = new _CAMERA;
++
++	camera->view_mat._11 = m_view._11; camera->view_mat._12 = m_view._12;
++	camera->view_mat._13 = m_view._13; camera->view_mat._14 = m_view._14;
++	camera->view_mat._21 = m_view._21; camera->view_mat._22 = m_view._22;
++	camera->view_mat._23 = m_view._23; camera->view_mat._24 = m_view._24;
++	camera->view_mat._31 = m_view._31; camera->view_mat._32 = m_view._32;
++	camera->view_mat._33 = m_view._33; camera->view_mat._34 = m_view._34;
++	camera->view_mat._41 = m_view._41; camera->view_mat._42 = m_view._42;
++	camera->view_mat._43 = m_view._43; camera->view_mat._44 = m_view._44;
++
++	camera->proj_mat._11 = m_proj._11; camera->proj_mat._12 = m_proj._12;
++	camera->proj_mat._13 = m_proj._13; camera->proj_mat._14 = m_proj._14;
++	camera->proj_mat._21 = m_proj._21; camera->proj_mat._22 = m_proj._22;
++	camera->proj_mat._23 = m_proj._23; camera->proj_mat._24 = m_proj._24;
++	camera->proj_mat._31 = m_proj._31; camera->proj_mat._32 = m_proj._32;
++	camera->proj_mat._33 = m_proj._33; camera->proj_mat._34 = m_proj._34;
++	camera->proj_mat._41 = m_proj._41; camera->proj_mat._42 = m_proj._42;
++	camera->proj_mat._43 = m_proj._43; camera->proj_mat._44 = m_proj._44;
++
++	display->x = m_pos.x;
++	display->y = m_pos.y;
++	display->width = m_size.x;
++	display->height = m_size.y;
++	display->buf = new UINT[(display->width * display->height)];
++
++	::Render(display->width, display->height, display->buf,
++		obj_list, obj_num, 0x00, 0, camera);
++
++	for(UINT i = 0 ;i<obj_num ; ++i){
++		delete [] (obj_list[i].vertex);
++		//delete [] (obj_list[i].texture);
++	}
++	delete [] obj_list;
++	delete camera;
++}
+\ No newline at end of file
+diff --git a/GameSystem/GameSystem.cpp b/GameSystem/GameSystem.cpp
+new file mode 100644
+index 0000000..4437fe7
+--- /dev/null
++++ b/GameSystem/GameSystem.cpp
+@@ -0,0 +1,68 @@
++#include "GameSystem.h"
++
++void update(){
++	_CGameSystem::GetSingleton()->Update();
++}
++
++void* CreateObject(void (*func)()){
++	_CObject* obj = _CGameSystem::GetSingleton()->CreateObject();
++	obj->update = func;
++	return (void*)obj;
++}
++bool ReleaseObject(void* obj){
++	return _CGameSystem::GetSingleton()->ReleaseObject((_CObject*)obj);
++}
++
++bool RegisterUpdate(void* pointer){
++	_CObject* obj = (_CObject*)pointer;
++	return _CGameSystem::GetSingleton()->RegisterUpdate(obj->update);
++}
++bool RemoveUpdate(void* pointer){
++	_CObject* obj = (_CObject*)pointer;
++	return _CGameSystem::GetSingleton()->RemoveUpdate(obj->update);
++}
++
++void* CreateCamera(){
++	_CCamera* cam = new _CCamera;
++	return cam;
++}
++bool ReleaseCameraUsePointer(void* cam){
++	delete cam;
++	return true;
++}
++bool ReleaseCameraUseID(UINT ID){
++	_CCamera* cam = _CGameSystem::GetSingleton()->SearchCamera(ID);
++	delete cam;
++	return true;
++}
++
++void SetBackBuffer(UINT x, UINT y){
++	_CGameSystem::GetSingleton()->SetSize(x,y);
++}
++UINT GetBackBufferX(){
++	return _CGameSystem::GetSingleton()->GetSizeX();
++}
++UINT GetBackBufferY(){
++	return _CGameSystem::GetSingleton()->GetSizeY();
++}
++_defaultvertex* GetVertex(Object obj){
++	_CObject* t_obj = (_CObject*)obj;
++	return t_obj->GetVertex();
++}
++UINT GetVertexNum(Object obj){
++	_CObject* t_obj = (_CObject*)obj;
++	return t_obj->GetVertexNumber();
++}
++bool SetVertex(Object obj, _defaultvertex* ver, UINT num){
++	_CObject* t_obj = (_CObject*)obj;
++	return t_obj->SetVertex(ver, num);
++}
++
++bool RegisterObjectForCamera(Camera cam, Object obj){
++	_CCamera* t_cam = (_CCamera*)cam;
++	return t_cam->RegisterObject((_CObject*)obj);
++}
++bool RemoveObjectForCamera(Camera cam, Object obj){
++	_CCamera* t_cam = (_CCamera*)cam;
++	return t_cam->RemoveObject((_CObject*)obj);
++}
+\ No newline at end of file
+diff --git a/GameSystem/GameSystem.h b/GameSystem/GameSystem.h
+new file mode 100644
+index 0000000..f875779
+--- /dev/null
++++ b/GameSystem/GameSystem.h
+@@ -0,0 +1,108 @@
++#pragma once
++
++#ifdef GAMESYSTEM_EXPORTS
++#define GSYS_API __declspec(dllexport)
++#include "MainSystem.h"
++#else
++#define GSYS_API __declspec(dllimport)
++#pragma comment(lib,"GameSystem.lib")
++#endif
++
++typedef void* Object;
++typedef void* Camera;
++
++#ifndef GAMESYSTEM_EXPORTS
++
++#define __x86__
++
++#ifdef __x86__
++typedef float			FLOAT;
++typedef int				INT;
++typedef unsigned int	UINT;
++#else
++typedef double				FLOAT
++#define __int64				INT 
++#define unsigned __int64	UINT
++#endif
++
++extern "C"{
++	struct _vector2{
++		FLOAT x, y;
++	};
++
++	struct _vector3{
++		FLOAT x, y, z;
++	};
++
++	struct _vector4{
++		FLOAT x, y, z, w;
++	};
++
++	struct _matrix2x2{
++		FLOAT _11, _12;
++		FLOAT _21, _22;
++	};
++
++	struct _matrix3x3{
++		FLOAT _11, _12, _13;
++		FLOAT _21, _22, _23;
++		FLOAT _31, _32, _33;
++	};
++
++	struct _matrix4x4{
++		FLOAT _11, _12, _13, _14;
++		FLOAT _21, _22, _23, _24;
++		FLOAT _31, _32, _33, _34;
++		FLOAT _41, _42, _43, _44;
++	};
++
++	struct _defaultvertex{
++		_vector3 pos;
++		_vector3 normal;
++		_vector4 diffuse;
++		_vector2 tex;
++	};
++}
++#endif
++
++extern "C"{
++	GSYS_API void update();
++}
++
++extern "C"{
++	GSYS_API void* CreateObject(void (*)());
++	GSYS_API bool ReleaseObject(void*);
++
++	GSYS_API void* CreateCamera();
++	GSYS_API bool ReleaseCameraUsePointer(void*);
++	GSYS_API bool ReleaseCameraUseID(UINT);
++
++	GSYS_API bool RegisterUpdate(void*);
++	GSYS_API bool RemoveUpdate(void*);
++	/*
++	GSYS_API void AlterPosition(void*, FLOAT, FLOAT, FLOAT);
++	GSYS_API void AlterRotation(void*, FLOAT, FLOAT, FLOAT);
++	GSYS_API void AlterScale(void*, FLOAT, FLOAT, FLOAT);
++	GSYS_API void SetWorldMatrix(void*, 
++		FLOAT, FLOAT, FLOAT, FLOAT,
++		FLOAT, FLOAT, FLOAT, FLOAT,
++		FLOAT, FLOAT, FLOAT, FLOAT,
++		FLOAT, FLOAT, FLOAT, FLOAT);*/
++
++	//GSYS_API bool RegisterRender(void*, UINT);
++	//GSYS_API bool RemoveRender(void*, UINT);
++}
++
++extern "C"{
++	GSYS_API void SetBackBuffer(UINT x, UINT y);
++	GSYS_API UINT GetBackBufferX();
++	GSYS_API UINT GetBackBufferY();
++	GSYS_API _defaultvertex* GetVertex(Object);
++	GSYS_API UINT GetVertexNum(Object);
++	GSYS_API bool SetVertex(Object, _defaultvertex*, UINT);
++}
++
++extern "C"{
++	GSYS_API bool RegisterObjectForCamera(Camera,Object);
++	GSYS_API bool RemoveObjectForCamera(Camera,Object);
++}
+\ No newline at end of file
+diff --git a/GameSystem/GameSystem.vcxproj b/GameSystem/GameSystem.vcxproj
+new file mode 100644
+index 0000000..bdcbc92
+--- /dev/null
++++ b/GameSystem/GameSystem.vcxproj
+@@ -0,0 +1,168 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{F23273CB-5F09-4C70-B303-0B6CEDD22ACB}</ProjectGuid>
++    <Keyword>Win32Proj</Keyword>
++    <RootNamespace>GameSystem</RootNamespace>
++    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Label="Shared">
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <WarningLevel>Level3</WarningLevel>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;GAMESYSTEM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <ClCompile>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <WarningLevel>Level3</WarningLevel>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;GAMESYSTEM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <WarningLevel>Level3</WarningLevel>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <Optimization>MaxSpeed</Optimization>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;GAMESYSTEM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <OptimizeReferences>true</OptimizeReferences>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <ClCompile>
++      <WarningLevel>Level3</WarningLevel>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <Optimization>MaxSpeed</Optimization>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;GAMESYSTEM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <OptimizeReferences>true</OptimizeReferences>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\Text.cpp" />
++    <ClCompile Include="Camera.cpp" />
++    <ClCompile Include="dllMain.cpp" />
++    <ClCompile Include="GameSystem.cpp" />
++    <ClCompile Include="MainSystem.cpp" />
++    <ClCompile Include="Object.cpp" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\RenderInterface\RenderInterface.h" />
++    <ClInclude Include="..\Text.h" />
++    <ClInclude Include="GameSystem.h" />
++    <ClInclude Include="List.h" />
++    <ClInclude Include="MainSystem.h" />
++    <ClInclude Include="Object.h" />
++    <ClInclude Include="Variable.h" />
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/GameSystem/GameSystem.vcxproj.filters b/GameSystem/GameSystem.vcxproj.filters
+new file mode 100644
+index 0000000..415b294
+--- /dev/null
++++ b/GameSystem/GameSystem.vcxproj.filters
+@@ -0,0 +1,60 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="소스 파일">
++      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
++      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
++    </Filter>
++    <Filter Include="헤더 파일">
++      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
++      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
++    </Filter>
++    <Filter Include="리소스 파일">
++      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
++      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="dllMain.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="GameSystem.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="MainSystem.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="Object.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="Camera.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="..\Text.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="GameSystem.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="Variable.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="Object.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="MainSystem.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="List.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="..\Text.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="..\RenderInterface\RenderInterface.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/GameSystem/List.h b/GameSystem/List.h
+new file mode 100644
+index 0000000..b177409
+--- /dev/null
++++ b/GameSystem/List.h
+@@ -0,0 +1,14 @@
++#pragma once
++
++
++template <class T>
++struct _LIST{
++public:
++	T* _node;
++	_LIST<T>* _next;
++};
++
++struct _funcLIST{
++	void (*_func)();
++	_funcLIST* _next;
++};
+\ No newline at end of file
+diff --git a/GameSystem/MainSystem.cpp b/GameSystem/MainSystem.cpp
+new file mode 100644
+index 0000000..c64ad21
+--- /dev/null
++++ b/GameSystem/MainSystem.cpp
+@@ -0,0 +1,240 @@
++#include "MainSystem.h"
++
++_CGameSystem* _CGameSystem::m_pSingleton = 0x00;
++
++_CGameSystem* _CGameSystem::GetSingleton(){
++	if(m_pSingleton == 0x00){
++		m_pSingleton = new _CGameSystem;
++	}
++	return m_pSingleton;
++}
++
++void _CGameSystem::Destroy(){
++	if(m_pSingleton != 0x00){
++		delete m_pSingleton;
++		m_pSingleton = 0x00;
++	}
++}
++
++_CGameSystem::_CGameSystem() : 
++	m_Object_List(0x00), m_Object_num(0),
++	m_Camera_List(0x00), m_Camera_num(0),
++	m_update_List(0x00), m_update_num(0),
++	m_Size_x(0), m_Size_y(0)
++{}
++_CGameSystem::~_CGameSystem(){
++	RemoveAllCamera();
++	RemoveAllUpdate();
++	ReleaseAllObject();
++}
++
++void _CGameSystem::Update(){
++	_funcLIST* t_func = m_update_List;
++	while(t_func != 0x00){
++		if(t_func->_func != 0x00){t_func->_func();}
++		t_func = t_func->_next;
++	}
++
++	_LIST<_CCamera>* t_cam = m_Camera_List;
++	UINT enable_cam = 0;
++	while(t_cam != 0x00){
++		if(t_cam->_node->Getable()){
++			++enable_cam;
++		}
++		t_cam = t_cam->_next;
++	}
++	_DISPLAY* display = new _DISPLAY[enable_cam];
++	t_cam = m_Camera_List;
++	UINT now_cam = 0;
++	while(t_cam != 0x00){
++		if(t_cam->_node->Getable()){
++			t_cam->_node->Render(&(display[now_cam]));
++			++now_cam;
++		}
++		t_cam = t_cam->_next;
++	}
++	DrawDisplay(m_Size_x,m_Size_y,display,enable_cam);
++	for(UINT i = 0 ; i<enable_cam ; ++i){
++		delete [] (display[i].buf);
++	}
++	delete [] display;
++}
++
++UINT _CGameSystem::GetSizeX() const{return m_Size_x;}
++UINT _CGameSystem::GetSizeY() const{return m_Size_y;}
++void _CGameSystem::SetSize(UINT x, UINT y){m_Size_x = x; m_Size_y = y;}
++
++//Object//////////////////////////////////////////////////////////////////////////////////////
++UINT _CGameSystem::GetObjectNumber() const{return m_Object_num;}
++_CObject* _CGameSystem::CreateObject(){
++	_LIST<_CObject>* t_node = new _LIST<_CObject>;
++	t_node->_node = new _CObject;
++	t_node->_next = m_Object_List;
++	m_Object_List = t_node;
++
++	++m_Object_num;
++
++	return t_node->_node;
++}
++
++bool _CGameSystem::ReleaseObject(_CObject* obj){
++	_LIST<_CObject>* t_node = m_Object_List;
++	_LIST<_CObject>* prev = 0x00;
++	while(t_node != 0x00){
++		if(t_node->_node == obj){
++			_LIST<_CCamera>* c_node = m_Camera_List;
++			while(c_node != 0x00){
++				c_node->_node->RemoveObject(obj);
++			}
++			//remove speaker in obj
++			//remove input in obj
++
++			if(prev != 0x00){
++				prev->_next = t_node->_next;
++			}
++			else{
++				m_Object_List = t_node->_next;
++			}
++			delete (t_node->_node);
++			delete t_node;
++
++			--m_Object_num;
++
++			return true;
++		}
++		prev = t_node;
++		t_node = t_node->_next;
++	}
++	return false;
++}
++bool _CGameSystem::ReleaseAllObject(){
++	_LIST<_CObject>* d_node = m_Object_List;
++	while(d_node != 0x00){
++		m_Object_List = m_Object_List->_next;
++		delete (d_node->_node);
++		delete d_node;
++		d_node = m_Object_List;
++	}
++
++	m_Object_num = 0;
++	return true;
++}
++//////////////////////////////////////////////////////////////////////////////////////////////
++
++//Camera//////////////////////////////////////////////////////////////////////////////////////
++UINT _CGameSystem::GetCameraNumber() const{return m_Camera_num;}
++bool _CGameSystem::RegisterCamera(_CCamera* cam){
++	_LIST<_CCamera>** t_node = &m_Camera_List;
++	while((*t_node) != 0x00){
++		if((*t_node)->_node == cam){return false;}
++		t_node = &((*t_node)->_next);
++	}
++	(*t_node) = new _LIST<_CCamera>;
++	(*t_node)->_node = cam;
++	(*t_node)->_next = 0x00;
++
++	++m_Camera_num;
++
++	return true;
++}
++bool _CGameSystem::RemoveCamera(_CCamera* cam){
++	_LIST<_CCamera>* t_node = m_Camera_List;
++	_LIST<_CCamera>* prev = 0x00;
++	while(t_node != 0x00){
++		if(t_node->_node == cam){
++			if(prev != 0x00){
++				prev->_next = t_node->_next;
++			}
++			else{
++				m_Camera_List = t_node->_next;
++			}
++			delete t_node;
++
++			--m_Camera_num;
++
++			return true;
++		}
++		prev = t_node;
++		t_node = t_node->_next;
++	}
++	return false;
++}
++bool _CGameSystem::RemoveAllCamera(){
++	_LIST<_CCamera>* d_node = m_Camera_List;
++	while(d_node != 0x00){
++		m_Camera_List = m_Camera_List->_next;
++		delete d_node;
++		d_node = m_Camera_List;
++	}
++	m_Camera_num = 0;
++	return true;
++}
++_CCamera* _CGameSystem::SearchCamera(UINT ID) const{
++	_LIST<_CCamera>* t_node = m_Camera_List;
++	for(UINT i = 0 ; i<ID ; ++i){
++		if(t_node == 0x00){return 0x00;}
++		t_node = t_node->_next;
++	}
++	return t_node->_node;
++}
++bool _CGameSystem::SwapCamera(_CCamera* cam1, _CCamera* cam2){return false;}
++//////////////////////////////////////////////////////////////////////////////////////////
++
++//Update//////////////////////////////////////////////////////////////////////////////////
++UINT _CGameSystem::GetUpdateNumber() const{return m_update_num;}
++bool _CGameSystem::RegisterUpdate(void (*func)()){
++	_funcLIST** t_node = &m_update_List;
++	while((*t_node) != 0x00){
++		if((*t_node)->_func == func){return false;}
++		t_node = &((*t_node)->_next);
++	}
++	(*t_node) = new _funcLIST;
++	(*t_node)->_func = func;
++	(*t_node)->_next = 0x00;
++
++	++m_update_num;
++
++	return true;
++}
++bool _CGameSystem::RemoveUpdate(void (*func)()){
++	_funcLIST* t_node = m_update_List;
++	_funcLIST* prev = 0x00;
++	while(t_node != 0x00){
++		if(t_node->_func == func){
++			if(prev != 0x00){
++				prev->_next = t_node->_next;
++			}
++			else{
++				m_update_List = t_node->_next;
++			}
++			delete t_node;
++
++			--m_update_num;
++
++			return true;
++		}
++		prev = t_node;
++		t_node = t_node->_next;
++	}
++	return false;
++}
++bool _CGameSystem::RemoveAllUpdate(){
++	_funcLIST* d_node = m_update_List;
++	while(d_node != 0x00){
++		m_update_List = m_update_List->_next;
++		delete d_node;
++		d_node = m_update_List;
++	}
++	m_update_num = 0;
++	return true;
++}
++void* _CGameSystem::SearchUpdate(UINT ID) const{
++	_funcLIST* t_node = m_update_List;
++	for(UINT i = 0 ; i<ID ; ++i){
++		if(t_node == 0x00){return 0x00;}
++		t_node = t_node->_next;
++	}
++	return t_node->_func;
++}
++bool _CGameSystem::SwapUpdate(void*, void*){return false;}
++//////////////////////////////////////////////////////////////////////////////////////////
+diff --git a/GameSystem/MainSystem.h b/GameSystem/MainSystem.h
+new file mode 100644
+index 0000000..860638f
+--- /dev/null
++++ b/GameSystem/MainSystem.h
+@@ -0,0 +1,63 @@
++#pragma once
++
++#include "List.h"
++#include "Object.h"
++
++#include "..\\RenderInterface\\RenderInterface.h"
++
++class _CGameSystem{
++private:
++	//List Object
++	_LIST<_CObject>* m_Object_List;
++	UINT m_Object_num;
++
++	//List Camera
++	_LIST<_CCamera>* m_Camera_List;
++	UINT m_Camera_num;
++
++	//List Speaker
++	//List Input
++
++	//List Update
++	_funcLIST* m_update_List;
++	UINT m_update_num;
++
++	UINT m_Size_x, m_Size_y;
++
++	static _CGameSystem* m_pSingleton;
++
++	_CGameSystem();
++	~_CGameSystem();
++
++public:
++	static _CGameSystem* GetSingleton();
++	static void Destroy();
++
++	void Update();
++
++	UINT GetSizeX() const;
++	UINT GetSizeY() const;
++	void SetSize(UINT x, UINT y);
++
++	//Object
++	UINT GetObjectNumber() const;
++	_CObject* CreateObject();
++	bool ReleaseObject(_CObject*);
++	bool ReleaseAllObject();
++
++	//Render
++	UINT GetCameraNumber() const;
++	bool RegisterCamera(_CCamera*);
++	bool RemoveCamera(_CCamera*);
++	bool RemoveAllCamera();
++	_CCamera* SearchCamera(UINT) const;
++	bool SwapCamera(_CCamera*, _CCamera*);
++
++	//update
++	UINT GetUpdateNumber() const;
++	bool RegisterUpdate(void (*)());
++	bool RemoveUpdate(void (*)());
++	bool RemoveAllUpdate();
++	void* SearchUpdate(UINT) const;
++	bool SwapUpdate(void*, void*);
++};
+\ No newline at end of file
+diff --git a/GameSystem/Object.cpp b/GameSystem/Object.cpp
+new file mode 100644
+index 0000000..e6a0d57
+--- /dev/null
++++ b/GameSystem/Object.cpp
+@@ -0,0 +1,53 @@
++#include "Object.h"
++
++_CObject::_CObject(){
++	m_pos = {0.0f, 0.0f, 0.0f};
++	m_rot = {0.0f, 0.0f, 0.0f};
++	m_scl = {1.0f, 1.0f, 1.0f};
++
++	m_world = {1.0f, 0.0f, 0.0f, 0.0f,
++			   0.0f, 1.0f, 0.0f, 0.0f,
++			   0.0f, 0.0f, 1.0f, 0.0f,
++			   0.0f, 0.0f, 0.0f, 1.0f};
++
++	m_vertex = 0x00;
++	m_vertex_num = 0;
++
++	m_texture = 0x00;
++	m_texture_num = 0;
++}
++
++_CObject::~_CObject(){
++	if(m_vertex != 0x00){
++		delete [] m_vertex;
++		m_vertex = 0x00;
++		m_vertex_num = 0;
++	}
++	if(m_texture != 0x00){
++		delete [] m_texture;
++		m_texture = 0x00;
++		m_texture_num = 0;
++	}
++}
++
++_matrix4x4 _CObject::GetWorldMatrix() const{return m_world;}
++
++UINT _CObject::GetVertexNumber() const{
++	return m_vertex_num;
++}
++bool _CObject::SetVertex(_defaultvertex* vertex, UINT num){
++	if(m_vertex != 0x00){
++		delete [] m_vertex;
++		m_vertex = 0x00;
++		m_vertex_num = 0;
++	}
++	m_vertex = new _defaultvertex[num];
++	m_vertex_num = num;
++	for(UINT i = 0 ; i<num ; ++i){
++		m_vertex[i] = vertex[i];
++	}
++	return true;
++}
++_defaultvertex* _CObject::GetVertex() const{
++	return m_vertex;
++}
+\ No newline at end of file
+diff --git a/GameSystem/Object.h b/GameSystem/Object.h
+new file mode 100644
+index 0000000..8e6d288
+--- /dev/null
++++ b/GameSystem/Object.h
+@@ -0,0 +1,89 @@
++#pragma once
++
++#include "Variable.h"
++#include "List.h"
++#include "..\\Text.h"
++#include "..\\RenderInterface\\RenderInterface.h"
++/*
++struct _RenderData{
++public:
++	_matrix4x4 m_world;
++	_defaultvertex* m_vertex;
++	UINT m_vertex_num;
++};
++*/
++
++class _CCamera;
++//class _CSpeaker;
++//class _CInput;
++class _CObject;
++
++class _CObject{
++private:
++	//Graphics
++	_vector3 m_pos, m_rot, m_scl;
++	_matrix4x4 m_world;
++	_defaultvertex* m_vertex;
++	UINT m_vertex_num;
++	TEXT* m_texture;
++	UINT m_texture_num;
++
++	//Sound state
++
++	//Input Set
++
++	//update
++
++public:
++	_CObject();
++	~_CObject();
++
++	//render
++	//get, set, alter pos,rot,scl
++	//get, set, alter wld mat
++	_matrix4x4 GetWorldMatrix() const;
++	//get, set vertex array
++	UINT GetVertexNumber() const;
++	bool SetVertex(_defaultvertex*, UINT);
++	_defaultvertex* GetVertex() const;
++	//get, set texture array
++
++	//create sound set
++	//create input set
++
++	//sound
++
++	//input
++
++	//update
++	void (*update)();
++};
++
++class _CCamera{
++private:
++	_vector3 m_eye, m_lookat, m_up;
++	_vector2 m_aspect, m_z;
++	_matrix4x4 m_view, m_proj;
++	_LIST<_CObject>* m_Object_List;
++
++	_vector2 m_pos;
++	_vector2 m_size;
++
++	bool m_able;
++	
++public:
++	_CCamera();
++	~_CCamera();
++
++	bool RegisterObject(_CObject*);
++	bool RemoveObject(_CObject*);
++
++	bool Getable() const;
++	void Enable();
++	void Disable();
++
++	void Render(_DISPLAY*);
++};
++
++//class _CSpeaker{};
++//class _CInput{};
+\ No newline at end of file
+diff --git a/GameSystem/Variable.h b/GameSystem/Variable.h
+new file mode 100644
+index 0000000..dd0531c
+--- /dev/null
++++ b/GameSystem/Variable.h
+@@ -0,0 +1,57 @@
++#pragma once
++
++#define __x86__
++
++#ifdef __x86__
++typedef float			FLOAT;
++typedef int				INT;
++typedef unsigned int	UINT;
++#else
++typedef double				FLOAT
++#define __int64				INT 
++#define unsigned __int64	UINT
++#endif
++
++struct _vector2{
++public:
++	FLOAT x, y;
++};
++
++struct _vector3{
++public:
++	FLOAT x, y, z;
++};
++
++struct _vector4{
++public:
++	FLOAT x, y, z, w;
++};
++
++struct _matrix2x2{
++public:
++	FLOAT _11, _12;
++	FLOAT _21, _22;
++};
++
++struct _matrix3x3{
++public:
++	FLOAT _11, _12, _13;
++	FLOAT _21, _22, _23;
++	FLOAT _31, _32, _33;
++};
++
++struct _matrix4x4{
++public:
++	FLOAT _11, _12, _13, _14;
++	FLOAT _21, _22, _23, _24;
++	FLOAT _31, _32, _33, _34;
++	FLOAT _41, _42, _43, _44;
++};
++
++struct _defaultvertex{
++public:
++	_vector4 pos;
++	_vector4 normal;
++	_vector4 diffuse;
++	_vector2 tex;
++};
+\ No newline at end of file
+diff --git a/GameSystem/dllMain.cpp b/GameSystem/dllMain.cpp
+new file mode 100644
+index 0000000..7015f1d
+--- /dev/null
++++ b/GameSystem/dllMain.cpp
+@@ -0,0 +1,12 @@
++#include <Windows.h>
++
++#include "MainSystem.h"
++
++bool WINAPI DllMain(HINSTANCE hInstace, DWORD fdwReason, LPVOID lpReserved) {
++	if (fdwReason == DLL_PROCESS_DETACH) {
++		if(_CGameSystem::GetSingleton() != 0x00){
++			_CGameSystem::Destroy();
++		}
++	}
++	return true;
++}
+\ No newline at end of file
+diff --git a/Release/GameSystem.exp b/Release/GameSystem.exp
+new file mode 100644
+index 0000000..24c2a6d
+Binary files /dev/null and b/Release/GameSystem.exp differ
+diff --git a/Release/GameSystem.iobj b/Release/GameSystem.iobj
+new file mode 100644
+index 0000000..450a6c1
+Binary files /dev/null and b/Release/GameSystem.iobj differ
+diff --git a/Release/GameSystem.ipdb b/Release/GameSystem.ipdb
+new file mode 100644
+index 0000000..b078223
+Binary files /dev/null and b/Release/GameSystem.ipdb differ
+diff --git a/Release/RenderInterface.exp b/Release/RenderInterface.exp
+new file mode 100644
+index 0000000..f489c6d
+Binary files /dev/null and b/Release/RenderInterface.exp differ
+diff --git a/Release/RenderInterface.iobj b/Release/RenderInterface.iobj
+new file mode 100644
+index 0000000..f46976c
+Binary files /dev/null and b/Release/RenderInterface.iobj differ
+diff --git a/Release/RenderInterface.ipdb b/Release/RenderInterface.ipdb
+new file mode 100644
+index 0000000..9c1df4d
+Binary files /dev/null and b/Release/RenderInterface.ipdb differ
+diff --git a/RenderInterface/Interface.cpp b/RenderInterface/Interface.cpp
+new file mode 100644
+index 0000000..9d51ca1
+--- /dev/null
++++ b/RenderInterface/Interface.cpp
+@@ -0,0 +1,39 @@
++#include "Interface.h"
++
++#include "OpenGL.h"
++
++_CInterface* _CInterface::m_pSingleton = 0x00;
++
++_CInterface* _CInterface::GetSingleton(){
++	if(m_pSingleton == 0x00){
++		m_pSingleton = new _COpenGLRenderer;
++	}
++	return m_pSingleton;
++}
++
++void _CInterface::Destroy(){
++	if(m_pSingleton != 0x00){
++		delete m_pSingleton;
++		m_pSingleton = 0x00;
++	}
++}
++
++void _CInterface::SetType(TYPE::TYPE type){
++	if(GetSingleton()->GetType() == type){return;}
++	Destroy();
++	switch(type){
++	case TYPE::NONE:
++		m_pSingleton = 0x00;
++		break;
++	case TYPE::OpenGL:
++		m_pSingleton = new _COpenGLRenderer;
++		break;
++	default:
++		m_pSingleton = 0x00;
++		break;
++	}
++}
++
++TYPE::TYPE _CInterface::GetType(){
++	return TYPE::NONE;
++}
+\ No newline at end of file
+diff --git a/RenderInterface/Interface.h b/RenderInterface/Interface.h
+new file mode 100644
+index 0000000..8eab75c
+--- /dev/null
++++ b/RenderInterface/Interface.h
+@@ -0,0 +1,30 @@
++#pragma once
++
++#include "RenderInterface.h"
++
++namespace TYPE{
++	enum TYPE{
++		NONE,
++		OpenGL,
++		DirectX9,
++		DirectX11
++	};
++}
++
++class _CInterface{
++private:
++	static _CInterface* m_pSingleton;
++
++protected:
++	_CInterface(){}
++	~_CInterface(){}
++
++public:
++	static void SetType(TYPE::TYPE);
++	virtual TYPE::TYPE GetType();
++	static _CInterface* GetSingleton();
++	static void Destroy();
++
++	virtual bool Render(UINT width, UINT height, UINT* buf, _OBJECT* obj_list, UINT object_num, _LIGHT* light_list, UINT light_num, _CAMERA* camera) = 0;
++	virtual bool DrawDisplay(UINT width, UINT height, _DISPLAY* display, UINT display_num) = 0;
++};
+\ No newline at end of file
+diff --git a/RenderInterface/OpenGL.cpp b/RenderInterface/OpenGL.cpp
+new file mode 100644
+index 0000000..e073dc7
+--- /dev/null
++++ b/RenderInterface/OpenGL.cpp
+@@ -0,0 +1,66 @@
++#include "OpenGL.h"
++
++TYPE::TYPE _COpenGLRenderer::GetType(){
++	return TYPE::OpenGL;
++}
++
++bool _COpenGLRenderer::Render(
++	UINT width, UINT height, UINT* buf, 
++	_OBJECT* obj_list, UINT object_num, _LIGHT* light_list, UINT light_num, _CAMERA* camera){
++	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
++	glMatrixMode(GL_MODELVIEW);
++	GLfloat view_mat[16] = {
++		camera->view_mat._11,camera->view_mat._12,camera->view_mat._13,camera->view_mat._14,
++		camera->view_mat._21,camera->view_mat._22,camera->view_mat._23,camera->view_mat._24,
++		camera->view_mat._31,camera->view_mat._32,camera->view_mat._33,camera->view_mat._34,
++		camera->view_mat._41,camera->view_mat._42,camera->view_mat._43,camera->view_mat._44
++	};
++	for(UINT i = 0 ; i < object_num ; ++i){
++		GLfloat world_mat[16] = {
++			obj_list[i].world_mat._11,obj_list[i].world_mat._12,obj_list[i].world_mat._13,obj_list[i].world_mat._14,
++			obj_list[i].world_mat._21,obj_list[i].world_mat._22,obj_list[i].world_mat._23,obj_list[i].world_mat._24,
++			obj_list[i].world_mat._31,obj_list[i].world_mat._32,obj_list[i].world_mat._33,obj_list[i].world_mat._34,
++			obj_list[i].world_mat._41,obj_list[i].world_mat._42,obj_list[i].world_mat._43,obj_list[i].world_mat._44};
++		glLoadMatrixf(world_mat);
++		glMultMatrixf(view_mat);
++		glBegin(GL_TRIANGLE_STRIP);
++			for(UINT j = 0; j<obj_list[i].vertex_num ; ++j){
++				glVertex3f(obj_list[i].vertex[j].vertex.x,obj_list[i].vertex[j].vertex.y,obj_list[i].vertex[j].vertex.z);
++			}
++		glEnd();
++	}
++	glMatrixMode(GL_TEXTURE);
++	glMatrixMode(GL_PROJECTION);
++	GLfloat proj_mat[16] = {
++		camera->proj_mat._11,camera->proj_mat._12,camera->proj_mat._13,camera->proj_mat._14,
++		camera->proj_mat._21,camera->proj_mat._22,camera->proj_mat._23,camera->proj_mat._24,
++		camera->proj_mat._31,camera->proj_mat._32,camera->proj_mat._33,camera->proj_mat._34,
++		camera->proj_mat._41,camera->proj_mat._42,camera->proj_mat._43,camera->proj_mat._44
++	};
++	glLoadMatrixf(proj_mat);
++	//glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
++
++	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,buf);
++	
++	return true;
++}
++
++bool _COpenGLRenderer::DrawDisplay(UINT width, UINT height, _DISPLAY* display, UINT display_num){
++	glViewport(0,0,width,height);
++	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
++	UINT* buf = new UINT[(width*height)];
++	for(UINT i = 0 ; i<(width*height) ; ++i){
++		buf[i] = 0x00;
++	}
++	for(UINT i = 0 ; i<display_num ; ++i){
++		for(UINT x = display[i].x ; x<width ; ++x){
++			for(UINT y = display[i].y ; y<height ; ++y){
++				buf[(y*width)+x] = display[i].buf[(y*(display[i].width))+x];
++			}
++		}
++	}
++	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
++	delete [] buf;
++	glFlush();
++	return true;
++}
+\ No newline at end of file
+diff --git a/RenderInterface/OpenGL.h b/RenderInterface/OpenGL.h
+new file mode 100644
+index 0000000..9f7fd07
+--- /dev/null
++++ b/RenderInterface/OpenGL.h
+@@ -0,0 +1,30 @@
++#pragma once
++
++#include <Windows.h>
++#include <gl\\GL.h>
++#include <gl\\GLU.h>
++
++#pragma comment(lib, "opengl32.lib")
++#pragma comment(lib, "glu32.lib")
++
++#include "Interface.h"
++
++class _COpenGLRenderer : public _CInterface{
++public:
++	_COpenGLRenderer(){
++		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
++		glDrawBuffer(GL_BACK);
++		glReadBuffer(GL_BACK);
++	}
++	~_COpenGLRenderer(){}
++
++public:
++	TYPE::TYPE GetType();
++	bool Render(UINT width, UINT height, UINT* buf, 
++		_OBJECT* obj_list, UINT object_num, 
++		_LIGHT* light_list, UINT light_num, 
++		_CAMERA* camera);
++	bool DrawDisplay(UINT width, UINT height, _DISPLAY* display, UINT display_num);
++	//load texture
++	//remove texture
++};
+\ No newline at end of file
+diff --git a/RenderInterface/RenderInterface.cpp b/RenderInterface/RenderInterface.cpp
+new file mode 100644
+index 0000000..c72ad11
+--- /dev/null
++++ b/RenderInterface/RenderInterface.cpp
+@@ -0,0 +1,13 @@
++#include "RenderInterface.h"
++
++#include "Interface.h"
++
++bool Render(UINT width, UINT height, UINT* buf, 
++	_OBJECT* obj_list, UINT object_num, 
++	_LIGHT* light_list, UINT light_num, 
++	_CAMERA* camera){
++	return _CInterface::GetSingleton()->Render(width, height, buf, obj_list, object_num, light_list, light_num, camera);
++}
++bool DrawDisplay(UINT width, UINT height, _DISPLAY* display, UINT display_num){
++	return _CInterface::GetSingleton()->DrawDisplay(width, height, display, display_num);
++}
+\ No newline at end of file
+diff --git a/RenderInterface/RenderInterface.h b/RenderInterface/RenderInterface.h
+new file mode 100644
+index 0000000..fbe6923
+--- /dev/null
++++ b/RenderInterface/RenderInterface.h
+@@ -0,0 +1,75 @@
++#pragma once
++
++#ifdef RENDERINTERFACE_EXPORTS
++#define RINTER_API __declspec(dllexport)
++#else
++#define RINTER_API __declspec(dllimport)
++#pragma comment(lib,"..\\Release\\RenderInterface.lib")
++#endif
++
++#include "..\\Text.h"
++
++#define __x86__
++
++#ifdef __x86__
++typedef float			FLOAT;
++typedef int				INT;
++typedef unsigned int	UINT;
++#else
++typedef double				FLOAT
++#define __int64				INT 
++#define unsigned __int64	UINT
++#endif
++
++extern "C"{
++	struct FLOAT4{
++		FLOAT x,y,z,w;
++	};
++	struct FLOAT2{
++		FLOAT x,y;
++	};
++	struct FLOAT4x4{
++		FLOAT _11,_12,_13,_14;
++		FLOAT _21,_22,_23,_24;
++		FLOAT _31,_32,_33,_34;
++		FLOAT _41,_42,_43,_44;
++	};
++}
++
++extern "C"{
++	struct _VERTEX{
++		FLOAT4 vertex;
++		FLOAT4 diffuse;
++		FLOAT4 normal;
++		FLOAT2 textureUV;
++	};
++	struct _OBJECT{
++		_VERTEX* vertex;
++		UINT vertex_num;
++		TEXT* texture;
++		UINT texture_num;
++		FLOAT4x4 world_mat;
++	};
++	struct _LIGHT{
++
++	};
++	struct _CAMERA{
++		FLOAT4x4 view_mat;
++		FLOAT4x4 proj_mat;
++	};
++
++	struct _DISPLAY{
++		UINT x, y;
++		UINT width;
++		UINT height;
++		UINT* buf;
++	};
++}
++
++extern "C"{
++	RINTER_API bool Render(UINT width, UINT height, UINT* buf, 
++		_OBJECT* obj_list, UINT object_num, 
++		_LIGHT* light_list, UINT light_num, 
++		_CAMERA* camera);
++	RINTER_API bool DrawDisplay(UINT width, UINT height, _DISPLAY* display, UINT display_num);
++}
+\ No newline at end of file
+diff --git a/RenderInterface/RenderInterface.vcxproj b/RenderInterface/RenderInterface.vcxproj
+new file mode 100644
+index 0000000..d07cd35
+--- /dev/null
++++ b/RenderInterface/RenderInterface.vcxproj
+@@ -0,0 +1,164 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Debug|x64">
++      <Configuration>Debug</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|x64">
++      <Configuration>Release</Configuration>
++      <Platform>x64</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{D289CE0D-F960-4B76-B22B-5ED339A44954}</ProjectGuid>
++    <Keyword>Win32Proj</Keyword>
++    <RootNamespace>RenderInterface</RootNamespace>
++    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>true</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <UseDebugLibraries>false</UseDebugLibraries>
++    <PlatformToolset>v140</PlatformToolset>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Label="Shared">
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <WarningLevel>Level3</WarningLevel>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;RENDERINTERFACE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
++    <ClCompile>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <WarningLevel>Level3</WarningLevel>
++      <Optimization>Disabled</Optimization>
++      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;RENDERINTERFACE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <WarningLevel>Level3</WarningLevel>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <Optimization>MaxSpeed</Optimization>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;RENDERINTERFACE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <OptimizeReferences>true</OptimizeReferences>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
++    <ClCompile>
++      <WarningLevel>Level3</WarningLevel>
++      <PrecompiledHeader>
++      </PrecompiledHeader>
++      <Optimization>MaxSpeed</Optimization>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;RENDERINTERFACE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <SDLCheck>true</SDLCheck>
++    </ClCompile>
++    <Link>
++      <SubSystem>Windows</SubSystem>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <OptimizeReferences>true</OptimizeReferences>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\Text.cpp" />
++    <ClCompile Include="dllMain.cpp" />
++    <ClCompile Include="Interface.cpp" />
++    <ClCompile Include="OpenGL.cpp" />
++    <ClCompile Include="RenderInterface.cpp" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\Text.h" />
++    <ClInclude Include="Interface.h" />
++    <ClInclude Include="OpenGL.h" />
++    <ClInclude Include="RenderInterface.h" />
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/RenderInterface/RenderInterface.vcxproj.filters b/RenderInterface/RenderInterface.vcxproj.filters
+new file mode 100644
+index 0000000..6c5df8f
+--- /dev/null
++++ b/RenderInterface/RenderInterface.vcxproj.filters
+@@ -0,0 +1,48 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="소스 파일">
++      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
++      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
++    </Filter>
++    <Filter Include="헤더 파일">
++      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
++      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
++    </Filter>
++    <Filter Include="리소스 파일">
++      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
++      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="dllMain.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="OpenGL.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="..\Text.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="Interface.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++    <ClCompile Include="RenderInterface.cpp">
++      <Filter>소스 파일</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="RenderInterface.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="OpenGL.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="Interface.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++    <ClInclude Include="..\Text.h">
++      <Filter>헤더 파일</Filter>
++    </ClInclude>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/RenderInterface/dllMain.cpp b/RenderInterface/dllMain.cpp
+new file mode 100644
+index 0000000..31874eb
+--- /dev/null
++++ b/RenderInterface/dllMain.cpp
+@@ -0,0 +1,12 @@
++#include <Windows.h>
++
++#include "Interface.h"
++
++bool WINAPI DllMain(HINSTANCE hInstace, DWORD fdwReason, LPVOID lpReserved) {
++	if (fdwReason == DLL_PROCESS_DETACH) {
++		if(_CInterface::GetSingleton() != 0x00){
++			_CInterface::Destroy();
++		}
++	}
++	return true;
++}
+\ No newline at end of file
+diff --git a/Text.cpp b/Text.cpp
+new file mode 100644
+index 0000000..c4858e1
+--- /dev/null
++++ b/Text.cpp
+@@ -0,0 +1,214 @@
++#include "Text.h"
++
++_Text::_Text(){
++	str = 0x00;
++	length = 0;
++}
++
++_Text::_Text(const char* text){
++	length = 0;
++	const char* t_char = text;
++	while(1){
++		if(*t_char == 0x00){
++			break;
++		}
++		++length;
++		t_char += 1;
++	}
++	str = new char[length+1];
++	for(unsigned int i = 0 ; i<(length+1) ; ++i){
++		str[i] = text[i];
++	}
++}
++
++_Text::~_Text(){
++	if(str != 0x00){
++		delete [] str;
++		str = 0x00;
++	}
++	length = 0;
++}
++
++const char* _Text::operator =(const char* text){
++	if(text == 0x00){
++		if(str != 0x00){
++			delete [] str;
++			str = 0x00;
++		}
++		length = 0;
++	
++		return 0x00;
++	}
++
++	char* t_text = 0x00;
++	unsigned int t_length = 0;
++	
++	while(1){
++		if(text[t_length] == 0x00){
++			break;
++		}
++		++t_length;
++	}
++	t_text = new char[t_length+1];
++	for(unsigned int i = 0 ; i<(t_length+1) ; ++i){
++		t_text[i] = text[i];
++	}
++	
++	if(str != 0x00){
++		delete [] str;
++		str = 0x00;
++	}
++
++	str = t_text;
++	length = t_length;
++
++	return str;
++}
++
++//_Text::operator const char*() const{
++//	return str;
++//}
++
++_Text::operator char*() const{
++	return str;
++}
++
++const unsigned int _Text::GetLength(){
++	return length;
++}
++
++//Compare Type : 2 small / 1 equal / 0 large
++
++int _Text::LengthCompare(_Text* text){
++	if(text == 0x00 || str == 0x00){return -1;}
++	if(length > text->GetLength()){
++		return 0;
++	}
++	else if(length < text->GetLength()){
++		return 2;
++	}
++	else{
++		return 1;
++	}
++}
++
++int _Text::SizeCompare(_Text* text){
++	int comp = LengthCompare(text);
++	if(comp != 1){return comp;}
++	for(unsigned int i = 0 ; i<length ; ++i){
++		if(str[i] == (*text)[i]){continue;}
++		else{
++			if(str[i] > (*text)[i]){
++				return 0;
++			}
++			else{
++				return 2;
++			}
++		}
++	}
++	return 1;
++}
++
++bool _Text::operator ==(_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 1){return true;}
++	else{return false;}
++}
++bool _Text::operator !=(_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 1){return false;}
++	else{return true;}
++}
++bool _Text::operator > (_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 0){return true;}
++	else{return false;}
++}
++bool _Text::operator >=(_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 0 || result == 1){return true;}
++	else{return false;}
++}
++bool _Text::operator < (_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 2){return true;}
++	else{return false;}
++}
++bool _Text::operator <=(_Text& text){
++	const int result = SizeCompare(&text);
++	if(result < 0){return false;}
++	if(result == 2 || result == 1){return true;}
++	else{return false;}
++}
++
++bool _Text::operator ==(const char* text){
++	_Text t_text = text;
++	return operator ==(t_text);
++}
++bool _Text::operator !=(const char* text){
++	_Text t_text = text;
++	return operator !=(t_text);
++}
++bool _Text::operator >=(const char* text){
++	_Text t_text = text;
++	return operator >=(t_text);
++}
++bool _Text::operator <=(const char* text){
++	_Text t_text = text;
++	return operator <=(t_text);
++}
++bool _Text::operator < (const char* text){
++	_Text t_text = text;
++	return operator < (t_text);
++}
++bool _Text::operator > (const char* text){
++	_Text t_text = text;
++	return operator > (t_text);
++}
++
++char* _Text::Search(const char* text, const char type){
++	if(text == 0x00){return 0;}
++	char* adr = 0x00;
++	
++	unsigned int t_length = 0;
++	while(1){
++		if(*(text + t_length) == 0x00){break;}
++		++t_length;
++	}
++
++	if(type == 'n' || type == 'N'){
++		for(unsigned int i = 0 ; i<length ; ++i){
++			if(str[i] == text[0]){
++				for(unsigned int j = 0 ; (j<t_length) && (i+j<length) ; ++j){
++					if(str[i+j] != text[j]){break;}
++					if(j == (t_length-1)){
++						adr = (str+i);
++						break;
++					}
++				}
++			}
++			if(adr != 0x00){break;}
++		}
++	}
++	else if(type == 'r' || type == 'R'){
++		for(int i = length-1 ; i>=0 ; --i){
++			if(str[i] == text[t_length-1]){
++				for(unsigned int j = 0 ; (j<t_length) && (i-j>=0) ; ++j){
++					if(str[i-j] != text[(t_length-1)-j]){break;}
++					if(j == (t_length-1)){
++						adr = (str+(i-j));
++						break;
++					}
++				}
++			}
++			if(adr != 0x00){break;}
++		}
++	}
++
++	return adr;
++}
+\ No newline at end of file
+diff --git a/Text.h b/Text.h
+new file mode 100644
+index 0000000..dd58840
+--- /dev/null
++++ b/Text.h
+@@ -0,0 +1,38 @@
++#pragma once
++
++typedef class _Text{
++private:
++	char* str;
++	unsigned int length;
++
++	int LengthCompare(_Text*);
++	int SizeCompare(_Text*);
++
++public:
++	_Text();
++	_Text(const char* text);
++	~_Text();
++
++	//operator const char*() const;
++	operator char*() const;
++	const unsigned int GetLength();
++
++	const char* operator =(const char* text);
++	
++	bool operator ==(_Text& text);
++	bool operator !=(_Text& text);
++	bool operator < (_Text& text);
++	bool operator <=(_Text& text);
++	bool operator > (_Text& text);
++	bool operator >=(_Text& text);
++
++	bool operator ==(const char* text);
++	bool operator !=(const char* text);
++	bool operator < (const char* text);
++	bool operator <=(const char* text);
++	bool operator > (const char* text);
++	bool operator >=(const char* text);
++	// +
++	char* Search(const char* text, const char type);
++
++}TEXT;

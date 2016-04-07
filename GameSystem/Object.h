@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Variable.h"
+#include "..\\Common\\Variable.h"
 #include "List.h"
-#include "..\\Text.h"
+#include "..\\Common\\Text.h"
 #include "..\\RenderInterface\\RenderInterface.h"
 /*
 struct _RenderData{
@@ -47,6 +47,9 @@ public:
 	bool SetVertex(_defaultvertex*, UINT);
 	_defaultvertex* GetVertex() const;
 	//get, set texture array
+	UINT GetTextureNumber() const;
+	bool SetTexture(TEXT*, UINT);
+	TEXT* GetTexture() const;
 
 	//create sound set
 	//create input set

@@ -146,7 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Text.cpp" />
+    <ClCompile Include="..\Common\Text.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="dllMain.cpp" />
     <ClCompile Include="GameSystem.cpp" />
@@ -154,13 +154,13 @@
     <ClCompile Include="Object.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Text.h" />
+    <ClInclude Include="..\Common\Variable.h" />
     <ClInclude Include="..\RenderInterface\RenderInterface.h" />
-    <ClInclude Include="..\Text.h" />
     <ClInclude Include="GameSystem.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="MainSystem.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="Variable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -51,3 +51,19 @@ bool _CObject::SetVertex(_defaultvertex* vertex, UINT num){
 _defaultvertex* _CObject::GetVertex() const{
 	return m_vertex;
 }
+
+UINT _CObject::GetTextureNumber() const{return m_texture_num;}
+bool _CObject::SetTexture(TEXT* tex, UINT num){
+	if(m_texture != 0x00){
+		delete [] m_texture;
+		m_texture = 0x00;
+		m_texture_num = 0;
+	}
+	m_texture = new TEXT[num];
+	m_texture_num = num;
+	for(UINT i = 0 ; i<num ; ++i){
+		m_texture[i] = tex[i];
+	}
+	return true;
+}
+TEXT* _CObject::GetTexture() const{return m_texture;}

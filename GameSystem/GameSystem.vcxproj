@@ -146,15 +146,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\Text.cpp" />
+    <ClCompile Include="..\Common\Function.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="dllMain.cpp" />
     <ClCompile Include="GameSystem.cpp" />
+    <ClCompile Include="GSYSwithCamera.cpp" />
+    <ClCompile Include="GSYSwithObject.cpp" />
     <ClCompile Include="MainSystem.cpp" />
     <ClCompile Include="Object.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Text.h" />
+    <ClInclude Include="..\Common\Function.h" />
     <ClInclude Include="..\Common\Variable.h" />
     <ClInclude Include="..\RenderInterface\RenderInterface.h" />
     <ClInclude Include="GameSystem.h" />

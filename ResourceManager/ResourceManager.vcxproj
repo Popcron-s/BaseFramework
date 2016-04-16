@@ -146,24 +146,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Text.h" />
+    <ClInclude Include="..\Common\Function.h" />
     <ClInclude Include="..\Common\Variable.h" />
     <ClInclude Include="BaseType.h" />
     <ClInclude Include="Decoder.h" />
     <ClInclude Include="ManagerClass.h" />
     <ClInclude Include="PNGDecoder.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\Text.cpp" />
+    <ClCompile Include="..\Common\Function.cpp" />
     <ClCompile Include="BMPDecoder.cpp" />
     <ClCompile Include="Decoder.cpp" />
     <ClCompile Include="dllMain.cpp" />
+    <ClCompile Include="Inflate.cpp" />
     <ClCompile Include="ManagerClass.cpp" />
     <ClCompile Include="PNGDecoder.cpp" />
     <ClCompile Include="PNGDecoderChunks.cpp" />
     <ClCompile Include="PNGDecoderCRC32.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

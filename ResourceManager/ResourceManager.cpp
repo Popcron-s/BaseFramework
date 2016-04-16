@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include "Text.h"
+
 _BaseType* GetResource(const char* filename){
 	return _ResourceManager::GetSingleton()->GetData(filename);
 }
@@ -8,7 +10,7 @@ bool GetResource(const char* filename,
 	unsigned int* width, unsigned int* height, unsigned int** buf){
 		_BaseType* data = 0x00;
 		if(_ResourceManager::GetSingleton()->GetData(filename, &data)){
-			if(data->type != "IMAGE"){return false;}
+			if(SizeCompare(data->type.text,"IMAGE") != 0){return false;}
 			*width = ((ImageData*)data)->width;
 			*height = ((ImageData*)data)->height;
 			(*buf) = ((ImageData*)data)->buf;

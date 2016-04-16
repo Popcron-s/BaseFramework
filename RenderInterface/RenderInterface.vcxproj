@@ -146,14 +146,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\Text.cpp" />
     <ClCompile Include="dllMain.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="RenderInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Text.h" />
     <ClInclude Include="..\Common\Variable.h" />
     <ClInclude Include="..\ResourceManager\ResourceManager.h" />
     <ClInclude Include="Interface.h" />

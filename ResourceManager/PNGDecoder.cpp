@@ -25,28 +25,33 @@ bool PNGDecoder(const char* filename, ImageData** data){
 
 	IHDR ihdr;
 	memset(&ihdr, 0x00, sizeof(IHDR));
+
+	//palete
+	unsigned int* palette = 0x00;
+	unsigned int plt_size = 0;
+	//fixed huffman code
 	
 	for(int i = 8 ; i < (file_len-3) ; ++i){
 		const char ctype[5] = {buf[i], buf[i+1], buf[i+2], buf[i+3], 0x00};
-		TEXT type = ctype;
+		//TEXT type = ctype;
 			
 		//Critical chunks
-		if(type == "IHDR" || type == "PLTE" || 
-		   type == "IDAT" || type == "IEND" || 
+		if((SizeCompare(ctype,"IHDR") == 0) || (SizeCompare(ctype,"PLTE") == 0) || 
+		   (SizeCompare(ctype,"IDAT") == 0) || (SizeCompare(ctype,"IEND") == 0) || 
 		//Ancillary chunks
 		//Transparency Info.
-		   type == "tRNS" || 
+			(SizeCompare(ctype,"tRNS") == 0) || 
 		//Color Space Info.
-		   type == "cHRM" || type == "gAMA" || type == "iCCP" || 
-		   type == "sBIT" || type == "sRGB" || 
+			(SizeCompare(ctype,"cHRM") == 0) || (SizeCompare(ctype,"gAMA") == 0) || (SizeCompare(ctype,"iCCP") == 0) || 
+			(SizeCompare(ctype,"sBIT") == 0) || (SizeCompare(ctype,"sRGB") == 0) || 
 		//Text Info.
-		   type == "iTXt" || type == "tEXt" || type == "zTXt" || 
+			(SizeCompare(ctype,"iTXt") == 0) || (SizeCompare(ctype,"tEXt") == 0) || (SizeCompare(ctype,"zTXt") == 0) || 
 		//etc... Info.
-		   type == "bkGD" || type == "hIST" || type == "pHYs" || 
-		   type == "sPLT" || 
+			(SizeCompare(ctype,"bkGD") == 0) || (SizeCompare(ctype,"hIST") == 0) || (SizeCompare(ctype,"pHYs") == 0) || 
+			(SizeCompare(ctype,"sPLT") == 0) || 
 		//Time Info
-		   type == "tTME"){
-				if(!ChunksAnalyzer(buf, &i, &ihdr,
+			(SizeCompare(ctype,"tTME") == 0)){
+				if(!ChunksAnalyzer(buf, &i, &ihdr, &palette, &plt_size,
 					&((*data)->width), &((*data)->height), &((*data)->buf))){
 					delete [] buf;
 					return false;
@@ -55,6 +60,8 @@ bool PNGDecoder(const char* filename, ImageData** data){
 	}
 
 	delete [] buf;
+
+	if(palette != 0x00){delete [] palette;}
 
 	_close(fadr);
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Text.h"
-
 #define __x86__
 
 #ifdef __x86__
@@ -45,6 +43,11 @@ extern "C"{
 		FLOAT _41, _42, _43, _44;
 	}FLOAT4x4;
 
+	typedef struct _text{
+		char* text;
+		UINT length;
+	}_TEXT;
+
 	typedef struct _defaultvertex{
 		_vector4 pos;
 		_vector4 normal;
@@ -55,7 +58,7 @@ extern "C"{
 	typedef struct _defaultobject{
 		_VERTEX* vertex;
 		UINT vertex_num;
-		TEXT* texture;
+		_TEXT* texture;
 		UINT texture_num;
 		FLOAT4x4 world_mat;
 	}_OBJECT;
@@ -70,7 +73,7 @@ extern "C"{
 	}_CAMERA;
 
 	typedef struct _defaultdisplay{
-		UINT x, y;
+		INT x, y;
 		UINT width;
 		UINT height;
 		UINT* buf;

@@ -8,65 +8,17 @@
 #pragma comment(lib,"GameSystem.lib")
 #endif
 
+#include "..\\Common\\Variable.h"
+
 typedef void* Object;
 typedef void* Camera;
 
-#ifndef GAMESYSTEM_EXPORTS
-
-#define __x86__
-
-#ifdef __x86__
-typedef float			FLOAT;
-typedef int				INT;
-typedef unsigned int	UINT;
-#else
-typedef double				FLOAT
-#define __int64				INT 
-#define unsigned __int64	UINT
-#endif
-
-extern "C"{
-	struct _vector2{
-		FLOAT x, y;
-	};
-
-	struct _vector3{
-		FLOAT x, y, z;
-	};
-
-	struct _vector4{
-		FLOAT x, y, z, w;
-	};
-
-	struct _matrix2x2{
-		FLOAT _11, _12;
-		FLOAT _21, _22;
-	};
-
-	struct _matrix3x3{
-		FLOAT _11, _12, _13;
-		FLOAT _21, _22, _23;
-		FLOAT _31, _32, _33;
-	};
-
-	struct _matrix4x4{
-		FLOAT _11, _12, _13, _14;
-		FLOAT _21, _22, _23, _24;
-		FLOAT _31, _32, _33, _34;
-		FLOAT _41, _42, _43, _44;
-	};
-
-	struct _defaultvertex{
-		_vector3 pos;
-		_vector3 normal;
-		_vector4 diffuse;
-		_vector2 tex;
-	};
-}
-#endif
-
 extern "C"{
 	GSYS_API void update();
+
+	GSYS_API void SetBackBuffer(UINT x, UINT y);
+	GSYS_API UINT GetBackBufferX();
+	GSYS_API UINT GetBackBufferY();
 }
 
 extern "C"{
@@ -77,8 +29,6 @@ extern "C"{
 	GSYS_API bool ReleaseCameraUsePointer(void*);
 	GSYS_API bool ReleaseCameraUseID(UINT);
 
-	GSYS_API bool RegisterUpdate(void*);
-	GSYS_API bool RemoveUpdate(void*);
 	/*
 	GSYS_API void AlterPosition(void*, FLOAT, FLOAT, FLOAT);
 	GSYS_API void AlterRotation(void*, FLOAT, FLOAT, FLOAT);
@@ -94,15 +44,60 @@ extern "C"{
 }
 
 extern "C"{
-	GSYS_API void SetBackBuffer(UINT x, UINT y);
-	GSYS_API UINT GetBackBufferX();
-	GSYS_API UINT GetBackBufferY();
+	GSYS_API bool RegisterUpdate(void*);
+	GSYS_API bool RemoveUpdate(void*);
+
+	GSYS_API _vector3 GetPosition(Object);
+	GSYS_API _vector3 GetRotation(Object);
+	GSYS_API _vector3 GetScale(Object);
+	GSYS_API void SetPosition(Object, FLOAT, FLOAT, FLOAT);
+	GSYS_API void SetRotation(Object, FLOAT, FLOAT, FLOAT);
+	GSYS_API void SetScale(Object, FLOAT, FLOAT, FLOAT);
+	GSYS_API void AlterPosition(Object, FLOAT, FLOAT, FLOAT);
+	GSYS_API void AlterRotation(Object, FLOAT, FLOAT, FLOAT);
+	GSYS_API void AlterScale(Object, FLOAT, FLOAT, FLOAT);
+
+	GSYS_API _matrix4x4 GetWorldMatrix(Object);
+	GSYS_API void SetWorldMatrix(Object);
+
 	GSYS_API _defaultvertex* GetVertex(Object);
 	GSYS_API UINT GetVertexNum(Object);
 	GSYS_API bool SetVertex(Object, _defaultvertex*, UINT);
+
+	GSYS_API _TEXT* GetTexture(Object);
+	GSYS_API UINT GetTextureNum(Object);
+	GSYS_API bool SetTexture(Object, _TEXT*, UINT);
 }
 
 extern "C"{
 	GSYS_API bool RegisterObjectForCamera(Camera,Object);
 	GSYS_API bool RemoveObjectForCamera(Camera,Object);
+
+	//get/set default
+	GSYS_API _vector2 GetCameraSize(Camera);
+	GSYS_API _vector2 GetCameraPosition(Camera);
+	GSYS_API void SetCameraSize(Camera, _vector2);
+	GSYS_API void SetCameraPosition(Camera, _vector2);
+
+	//get/set view matrix
+	GSYS_API _vector3 GetEye(Camera);
+	GSYS_API _vector3 GetLookat(Camera);
+	GSYS_API _vector3 GetUp(Camera);
+	GSYS_API void SetEye(Camera, _vector3);
+	GSYS_API void SetLookat(Camera, _vector3);
+	GSYS_API void SetUp(Camera, _vector3);
+	GSYS_API void SetViewMatrix(Camera);
+
+	//get/set proj matrix
+	//ortho projection
+	GSYS_API _vector3 GetNearOrtho(Camera);
+	GSYS_API _vector3 GetFarOrtho(Camera);
+	GSYS_API void SetOrtho(Camera, _vector3, _vector3);
+	GSYS_API void SetOrthoProjMatrix(Camera);
+	//perspective projection
+	GSYS_API _vector2 GetAspect(Camera);
+	GSYS_API FLOAT GetNearZ(Camera);
+	GSYS_API FLOAT GetFarZ(Camera);
+	GSYS_API void SetPerspective(Camera, _vector2, FLOAT, FLOAT);
+	GSYS_API void SetPerspectiveProjMatrix(Camera);
 }

@@ -74,9 +74,9 @@ bool BMPDecoder(const char* filename, ImageData** data){
 			temp.i = 0x00;
 
 			temp.c[3] = 0xFF; //a
-			temp.c[2] = buf[((-y+((*data)->height-1))*index)+(x*3)+2]; //r
+			temp.c[0] = buf[((-y+((*data)->height-1))*index)+(x*3)+2]; //r
 			temp.c[1] = buf[((-y+((*data)->height-1))*index)+(x*3)+1]; //g
-			temp.c[0] = buf[((-y+((*data)->height-1))*index)+(x*3)]; //b
+			temp.c[2] = buf[((-y+((*data)->height-1))*index)+(x*3)]; //b
 			
 			(*data)->buf[(y*(*data)->width)+x] = temp.i;
 		}

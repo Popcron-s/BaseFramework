@@ -1,7 +1,14 @@
 #pragma once
 
-extern "C"{
-	typedef class _Text{
+#ifdef COMMON_EXPORTS
+#define COMMON_API __declspec(dllexport)
+#else
+#define COMMON_API __declspec(dllimport)
+#pragma comment(lib,"..\\Release\\Common.lib")
+#endif
+
+//extern "C"{
+	typedef class COMMON_API _Text{
 	private:
 		char* str;
 		unsigned int length;
@@ -37,4 +44,4 @@ extern "C"{
 		char* Search(const char* text, const char type);
 
 	}TEXT;
-}
+//}

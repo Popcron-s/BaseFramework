@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseType.h"
+#include "Text.h"
 
 bool Decode(const char* filename, _BaseType** data);
 

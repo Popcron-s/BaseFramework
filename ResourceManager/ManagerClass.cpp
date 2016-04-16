@@ -34,19 +34,30 @@ void _ResourceManager::TextNormalize(char* text){
 }
 
 bool _ResourceManager::Insert(const char* text){
-	TEXT nor_text = text;
-	TextNormalize(nor_text);
+	_TEXT nor_text = {};
+	SetText(&nor_text, text);
+	TextNormalize(nor_text.text);
 
 	_BaseType* data = 0x00;
 
-	if(!Decode(nor_text, &data)){return false;} 
+	if(!Decode(nor_text.text, &data)){
+		if(nor_text.text != 0x00){
+			delete [] nor_text.text;
+			nor_text.text = 0;
+		}
+		return false;
+	} 
 
 	_Node** t_node = &m_Head;
 
 	while((*t_node) != 0x00){
-		if(nor_text < (*t_node)->name){t_node = &((*t_node)->LNode);}
-		else if(nor_text > (*t_node)->name){t_node = &((*t_node)->RNode);}
+		if(SizeCompare(&nor_text,&(*t_node)->name) == -1){t_node = &((*t_node)->LNode);}
+		else if(SizeCompare(&nor_text,&((*t_node)->name)) == 1){t_node = &((*t_node)->RNode);}
 		else{
+			if(nor_text.text != 0x00){
+				delete [] nor_text.text;
+				nor_text.text = 0;
+			}
 			if(data != 0x00){
 				delete data;
 				data = 0x00;
@@ -56,24 +67,31 @@ bool _ResourceManager::Insert(const char* text){
 	}
 
 	(*t_node) = new _Node;
-	(*t_node)->name = (char*)nor_text;
+	(*t_node)->name = {};
+	SetText(&((*t_node)->name), nor_text.text);
 	(*t_node)->data = data; 
 	(*t_node)->LNode = 0x00;
 	(*t_node)->RNode = 0x00;
 
 	++m_Count;
 
+	if(nor_text.text != 0x00){
+		delete [] nor_text.text;
+		nor_text.text = 0;
+	}
+
 	return true;
 }
 
 bool _ResourceManager::Remove(const char* text){
-	TEXT nor_text = text;
-	TextNormalize(nor_text);
+	_TEXT nor_text = {};
+	SetText(&nor_text, text);
+	TextNormalize(nor_text.text);
 
 	_Node** t_node = &m_Head;
 	while((*t_node) != 0x00){
-		if(nor_text < (*t_node)->name){t_node = &((*t_node)->LNode);}
-		else if(nor_text > (*t_node)->name){t_node = &((*t_node)->RNode);}
+		if(SizeCompare(&nor_text,&((*t_node)->name)) == -1){t_node = &((*t_node)->LNode);}
+		else if(SizeCompare(&nor_text,&((*t_node)->name)) == 1){t_node = &((*t_node)->RNode);}
 		else{
 			if(((*t_node)->LNode != 0x00) && ((*t_node)->RNode != 0x00)){
 				_Node** t_node2 = t_node;
@@ -109,8 +127,19 @@ bool _ResourceManager::Remove(const char* text){
 			}
 
 			--m_Count;
+
+			if(nor_text.text != 0x00){
+				delete [] nor_text.text;
+				nor_text.text = 0x00;
+			}
+
 			return true;
 		}
+	}
+
+	if(nor_text.text != 0x00){
+		delete [] nor_text.text;
+		nor_text.text = 0x00;
 	}
 
 	return false;
@@ -118,45 +147,59 @@ bool _ResourceManager::Remove(const char* text){
 
 bool _ResourceManager::RemoveAll(){
 	while(m_Count > 0){
-		Remove(m_Head->name);
+		Remove(m_Head->name.text);
 	}
 	return true;
 }
 
 bool _ResourceManager::GetData(const char* text, _BaseType** data){
-	TEXT nor_text = text;
-	TextNormalize(nor_text);
+	_TEXT nor_text = {};
+	SetText(&nor_text, text);
+	TextNormalize(nor_text.text);
 
 	_Node* t_node = m_Head;
 
 	while(t_node != 0x00){
-		if(nor_text < t_node->name){t_node = t_node->LNode;}
-		else if(nor_text > t_node->name){t_node = t_node->RNode;}
+		if(SizeCompare(&nor_text, &(t_node->name)) == -1){t_node = t_node->LNode;}
+		else if(SizeCompare(&nor_text, &(t_node->name)) == 1){t_node = t_node->RNode;}
 		else{break;}
+	}
+
+	if(nor_text.text != 0x00){
+		delete [] nor_text.text;
+		nor_text.text = 0x00;
 	}
 
 	if(t_node == 0x00){return false;}
 
 	(*data) = t_node->data;
+
 	return true;
 }
 
 _BaseType* _ResourceManager::GetData(const char* text){
 	_BaseType* data = 0x00;
-	TEXT nor_text = text;
-	TextNormalize(nor_text);
+	_TEXT nor_text = {};
+	SetText(&nor_text, text);
+	TextNormalize(nor_text.text);
 
 	_Node* t_node = m_Head;
 
 	while(t_node != 0x00){
-		if(nor_text < t_node->name){t_node = t_node->LNode;}
-		else if(nor_text > t_node->name){t_node = t_node->RNode;}
+		if(SizeCompare(&nor_text, &(t_node->name)) == -1){t_node = t_node->LNode;}
+		else if(SizeCompare(&nor_text, &(t_node->name)) == 1){t_node = t_node->RNode;}
 		else{break;}
+	}
+
+	if(nor_text.text != 0x00){
+		delete [] nor_text.text;
+		nor_text.text = 0x00;
 	}
 
 	if(t_node == 0x00){return 0x00;}
 
 	data = t_node->data;
+
 	return data;
 }
 

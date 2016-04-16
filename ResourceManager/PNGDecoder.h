@@ -32,5 +32,8 @@ bool CRC32(unsigned char* buf, unsigned int len);
 
 //bool IHDRChunk(unsigned char* buf, IHDR* ihdr);
 
-bool ChunksAnalyzer(unsigned char* buf, int* pos, IHDR* ihdr,
+bool ChunksAnalyzer(unsigned char* buf, int* pos, IHDR* ihdr, 
+					unsigned int** palette, unsigned int* plt_size,
 					unsigned int* width, unsigned int* height, unsigned int** g_buf);
+
+bool Inflate(unsigned char* buf, unsigned int* pos, unsigned char* ud_buf, unsigned int* ud_pos);

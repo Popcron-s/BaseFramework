@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseType.h"
+#include "..\\Common\\Function.h"
 
 class _ResourceManager{
 private:

@@ -8,10 +8,9 @@ bool Decode(const char* filename, _BaseType** data){
 		return false;
 	}
 
-	TEXT type = filename;
-	type = type.Search(".", 'r');
+	char* type = CharSearch(filename, ".", 'r');
 
-	if(type == ".BMP"){
+	if(SizeCompare(type,".BMP") == 0){
 		if((*data) != 0x00){
 			delete data;
 			data = 0x00;
@@ -23,9 +22,10 @@ bool Decode(const char* filename, _BaseType** data){
 			(*data) = 0x00;
 			return false;
 		}
-		(*data)->type = "IMAGE";
+		(*data)->type = {};
+		SetText(&((*data)->type),"IMAGE");
 	}
-	else if(type == ".PNG"){
+	else if(SizeCompare(type,".PNG") == 0){
 		if((*data) != 0x00){
 			delete data;
 			data = 0x00;
@@ -37,7 +37,8 @@ bool Decode(const char* filename, _BaseType** data){
 			(*data) = 0x00;
 			return false;
 		}
-		(*data)->type = "IMAGE";
+		(*data)->type = {};
+		SetText(&((*data)->type),"IMAGE");
 	}
 	else{
 		return false;

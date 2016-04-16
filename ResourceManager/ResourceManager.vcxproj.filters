@@ -33,11 +33,14 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Text.h">
-      <Filter>공용</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Variable.h">
       <Filter>공용</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Function.h">
+      <Filter>공용</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -65,8 +68,14 @@
     <ClCompile Include="dllMain.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Text.cpp">
+    <ClCompile Include="..\Common\Function.cpp">
       <Filter>공용</Filter>
+    </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Inflate.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

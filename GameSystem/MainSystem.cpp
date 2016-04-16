@@ -29,12 +29,14 @@ _CGameSystem::~_CGameSystem(){
 }
 
 void _CGameSystem::Update(){
+	// Update
 	_funcLIST* t_func = m_update_List;
 	while(t_func != 0x00){
 		if(t_func->_func != 0x00){t_func->_func();}
 		t_func = t_func->_next;
 	}
 
+	//Render
 	_LIST<_CCamera>* t_cam = m_Camera_List;
 	UINT enable_cam = 0;
 	while(t_cam != 0x00){
@@ -85,6 +87,7 @@ bool _CGameSystem::ReleaseObject(_CObject* obj){
 			_LIST<_CCamera>* c_node = m_Camera_List;
 			while(c_node != 0x00){
 				c_node->_node->RemoveObject(obj);
+				c_node = c_node->_next;
 			}
 			//remove speaker in obj
 			//remove input in obj

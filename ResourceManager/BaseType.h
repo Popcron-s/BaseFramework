@@ -1,5 +1,5 @@
 #pragma once
-#include "..\\Common\\Text.h"
+#include "..\\Common\\Variable.h"
 
 /*****************************************************************
  * _BaseType value type Info
@@ -13,7 +13,7 @@
 
 struct _BaseType{
 public:
-	TEXT type;
+	_TEXT type;
 };
 
 typedef struct _Image : public _BaseType{
@@ -35,14 +35,17 @@ public:
 }ImageData;
 
 struct _Node{
-	TEXT name;
+	_TEXT name;
 	_BaseType* data;
 
 	_Node* LNode;
 	_Node* RNode;
 
-	_Node(){data = 0x00; LNode = 0x00; RNode = 0x00;}
+	_Node(){name.text = 0x00; name.length = 0; data = 0x00; LNode = 0x00; RNode = 0x00;}
 	~_Node(){
+		if(name.text != 0x00){
+			delete [] name.text;
+		}
 		if(data != 0x00){
 			delete data;
 			data = 0x00;

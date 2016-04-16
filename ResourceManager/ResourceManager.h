@@ -8,6 +8,9 @@
 #pragma comment(lib, "..\\Release\\ResourceManager.lib")
 #endif
 
+#include "..\\Common\\Variable.h"
+#include "..\\Common\\Function.h"
+
 extern "C"{
 	//RMANAG_API _BaseType* GetResource(const char*);
 	RMANAG_API bool GetResource(const char*, 
